@@ -339,6 +339,21 @@ func startPostStartProcesses(
 	}
 }
 
+// filterEnvironment returns the environment that should be passed the child
+// process; this is useful as by default we cannot unset environment variables
+// at the Kubernetes level.
+func filterEnvironment() []string {
+	env := make([]string, 0, len(os.Environ()))
+	for _, v := range os.Environ() {
+		if strings.HasSuffix(v, "=<unset>") {
+			fmt.Printf("Unsetting environment variable %s\n", v)
+		} else {
+			env = append(env, v)
+		}
+	}
+	return env
+}
+
 type runErr struct {
 	err error
 }
@@ -374,6 +389,7 @@ func (cr *ContainerRunner) Run(
 	stdio Stdio,
 ) (Process, error) {
 	cmd := exec.Command(command.Name, command.Arg...)
+	cmd.Env = filterEnvironment()
 	return cr.run(cmd, stdio)
 }
 
@@ -393,6 +409,7 @@ func (cr *ContainerRunner) run(
 ) (Process, error) {
 	cmd.Stdout = stdio.Out
 	cmd.Stderr = stdio.Err
+	cmd.Env = filterEnvironment()
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("failed to run command: %v", err)
 	}
@@ -435,6 +452,7 @@ func (cr *ConditionRunner) RunContext(
 	for {
 		cr.sleep(conditionSleepTime)
 		cmd := cr.execCommandContext(ctx, command.Name, command.Arg...)
+		cmd.Env = filterEnvironment()
 		if err := cmd.Run(); err != nil {
 			if err := ctx.Err(); err == context.DeadlineExceeded {
 				return nil, err
