@@ -348,6 +348,7 @@ func filterEnvironment() []string {
 		if strings.HasSuffix(v, "=<unset>") {
 			fmt.Printf("Unsetting environment variable %s\n", v)
 		} else {
+			fmt.Printf("Passing through %s\n", strings.SplitN(v, "=", 2)[0])
 			env = append(env, v)
 		}
 	}

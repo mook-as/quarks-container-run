@@ -29,7 +29,7 @@ func NewContainerRunCmd(
 
 	cmd := &cobra.Command{
 		Use:           "container-run",
-		Short:         "Runs a command and a post-start with optional conditions",
+		Short:         "Runs a command and a post-start with optional conditions (Edited)",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
